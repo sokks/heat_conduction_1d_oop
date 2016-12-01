@@ -146,9 +146,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="HeatEquation.h" />
     <ClInclude Include="MatrixDiag.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HeatEquation.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MatrixDiag.cpp" />
   </ItemGroup>

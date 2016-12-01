@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -16,6 +17,6 @@ public:
 
 	bool isEmpty();
 	vector<double> sweep(vector<double> F);
-	vector<double> sweepOMP(vector<double> F);
+	//vector<double> sweepOMP(vector<double> F);
 };
 

@@ -64,10 +64,10 @@ vector<double> MatrixDiag::sweep(vector<double> F)
 
 	return X;
 }
-
-vector<double> MatrixDiag::sweepOMP(vector<double> F)
-{
-	return vector<double>();
-}
+//
+//vector<double> MatrixDiag::sweepOMP(vector<double> F)
+//{
+//	return vector<double>();
+//}
 
 
