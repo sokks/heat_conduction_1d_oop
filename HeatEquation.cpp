@@ -112,14 +112,24 @@ double HeatEquation::getTime()
 	return currentTime;
 }
 
-void HeatEquation::solve(double tEnd)
+void HeatEquation::solve(std::string filename, double tEnd)
 {
 	if (tEnd - time_step * TIME_STEPS > EPS) {
 		SetTimeStep(tEnd / TIME_STEPS);
 	}
+	currentTime = 0;
+	currentTemperature = startTemperature;
+	ofstream fout;
+	fout.open(filename);
+	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
+		for (vector<double>::iterator it = currentTemperature.begin(); it != currentTemperature.end(); ++it) {
+			fout << *it << " ";
+		}
+		fout << std::endl;
 		doTimeStep();
 	}
+	fout.close();
 }
 
 void HeatEquation::doTimeStep()
@@ -145,7 +155,7 @@ double fStart(double x, double h)
 
 double testRes(double x, double t, double a, double h)
 {
-	return 2 * sin(M_PI * x / h) * exp(-a * M_PI * M_PI / (h * h) * t);
+	return 2 * sin(M_PI * x / h) * exp( (-a) * M_PI * M_PI * t / (h * h) );
 }
 
 TestHeatEquation::TestHeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight):
@@ -199,17 +209,27 @@ TestHeatEquation & TestHeatEquation::operator=(const TestHeatEquation & anotherE
 	return *this;
 }
 
-void TestHeatEquation::presolve(double tEnd, bool check, double eps)
+void TestHeatEquation::presolve(std::string filename, double tEnd, bool check, double eps)
 {
 	if (tEnd - time_step * TIME_STEPS > EPS) {
 		SetTimeStep(tEnd / TIME_STEPS);
 	}
+	currentTime = 0;
+	currentTemperatureAnalytic = startTemperature;
+	ofstream fout;
+	fout.open(filename);
+	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
+		for (vector<double>::iterator it = currentTemperatureAnalytic.begin(); it != currentTemperatureAnalytic.end(); ++it) {
+			fout << *it << " ";
+		}
+		fout << std::endl;
 		doTestStep();
 		if (check) {
-			compare(eps);
+			compare(eps); // write somewhere
 		}
 	}
+	fout.close();
 }
 
 void TestHeatEquation::doTestStep()

@@ -64,10 +64,17 @@ vector<double> MatrixDiag::sweep(vector<double> F)
 
 	return X;
 }
-//
-//vector<double> MatrixDiag::sweepOMP(vector<double> F)
-//{
-//	return vector<double>();
-//}
+
+vector<double> MatrixDiag::sweepOMP(vector<double> F, int nOfThreads)
+{
+	int curNOfThreads = omp_get_num_threads();
+	omp_set_num_threads(nOfThreads);
+	vector<double> X(size);
+
+	
+
+	omp_set_num_threads(curNOfThreads);
+	return X;
+}
 
 

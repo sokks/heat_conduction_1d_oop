@@ -5,6 +5,9 @@ using std::cout;
 using std::endl;
 
 int main() {
+	//omp_set_dynamic(1);
+	//cout << omp_get_dynamic() << endl;
+
 	//  сталь
 	/*double lambda = 46.0;
 	double ro = 7800.0;
@@ -12,12 +15,11 @@ int main() {
 	int t_end = 120;
 	double L = 0.1;
 	char output[] = "output.txt";*/
-	HeatEquation Eq1(1, 46.0, 7800.0, 460.0, 0.0, 0.0);
-	Eq1.solve(20.0);
-	vector<double> res = Eq1.getCurrentTemperature();
-	for (vector<double>::iterator it = res.begin(); it != res.end(); ++it) {
-		cout << *it << " ";
-	}
+	std::string out1("output.txt");
+	std::string out2("outputtest.txt");
+	TestHeatEquation Eq1(0.1, 46.0, 7800.0, 460.0, 0.0, 0.0);
+	Eq1.solve(out1, 20.0);
+	Eq1.presolve(out2, 20.0);
 	cout << endl;
 	return 0;
 }

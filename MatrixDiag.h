@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <cmath>
+#include <omp.h>
 
 using namespace std;
 
@@ -17,6 +18,6 @@ public:
 
 	bool isEmpty();
 	vector<double> sweep(vector<double> F);
-	//vector<double> sweepOMP(vector<double> F);
+	vector<double> sweepOMP(vector<double> F, int nOfThreads = 4);
 };
 

@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include <string>
+#include <fstream>
 #include "MatrixDiag.h"
 #define M_PI 3.14159265358979323846
 #define EPS 0.00001
@@ -12,7 +14,7 @@ double testRes(double x, double t, double a, double h);
 class HeatEquation
 {
 protected:
-	int X_STEPS = 100, TIME_STEPS = 10;
+	int X_STEPS = 101, TIME_STEPS = 100;
 	double L, lambda, ro, c, a_sqr;
 	double x_step, time_step = 0.1;
 	double tLeft, tRight;
@@ -34,7 +36,7 @@ public:
 	vector<double> getCurrentTemperature();
 	double getTime();
 
-	void solve(double tEnd = 10.0);
+	void solve(std::string filename, double tEnd = 10.0);
 	void doTimeStep();
 
 };
@@ -46,7 +48,7 @@ public:
 	TestHeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight);
 	TestHeatEquation(const TestHeatEquation & anotherEquation);
 	TestHeatEquation & operator= (const TestHeatEquation & anotherEquation);
-	void presolve(double tEnd = 10.0, bool check = false, double eps = 0.001);
+	void presolve(std::string filename, double tEnd = 10.0, bool check = false, double eps = 0.001);
 	void doTestStep();
 	bool compare(double eps = 0.001);
 };
