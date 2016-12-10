@@ -1,19 +1,9 @@
-﻿Сборка начата 05.12.2016 18:29:49.
-     1>Проект "D:\Documents\sem5\setki\heat_conduction_1d_oop\heat_conduction_1d_oop\heat_conduction_1d_oop.vcxproj" в узле 2 (целевые объекты Build).
-     1>InitializeBuildStatus:
-         Обращение к "Debug\heat_con.9E33827C.tlog\unsuccessfulbuild".
-       MessageBuildingWithCompiler:
-         Building with Intel(R) C++ Compiler 17.0
-       ClCompile:
-         ***** ClCompile (Win32 - Intel C++)
-         Для всех выходных данных обновления не требуется.
-       Link:
-         Для всех выходных данных обновления не требуется.
-       FinalizeBuildStatus:
-         Файл "Debug\heat_con.9E33827C.tlog\unsuccessfulbuild" удаляется.
-         Обращение к "Debug\heat_con.9E33827C.tlog\heat_conduction_1d_oop.lastbuildstate".
-     1>Сборка проекта "D:\Documents\sem5\setki\heat_conduction_1d_oop\heat_conduction_1d_oop\heat_conduction_1d_oop.vcxproj" завершена (целевые объекты Build).
+﻿Сборка начата 10.12.2016 4:34:27.
+     1>Проект "D:\Documents\sem5\setki\heat_conduction_1d_oop\heat_conduction_1d_oop\heat_conduction_1d_oop.vcxproj" в узле 2 (целевые объекты Clean).
+     1>_PrepareForClean:
+         Файл "Debug\heat_con.9E33827C.tlog\heat_conduction_1d_oop.lastbuildstate" удаляется.
+     1>Сборка проекта "D:\Documents\sem5\setki\heat_conduction_1d_oop\heat_conduction_1d_oop\heat_conduction_1d_oop.vcxproj" завершена (целевые объекты Clean).
 
 Сборка успешно завершена.
 
-Затраченное время: 00:00:00.09
+Затраченное время: 00:00:00.22

@@ -10,11 +10,25 @@ using namespace std;
 double fStart(double x, double h);
 double testRes(double x, double t, double a, double h);
 
+double f1(double x);
+double u1(double x, double t);
+
+class Functor1 {
+	double operator() ();
+	double operator() (double x, double h);
+	double operator() (double x, double t, double a, double h);
+};
+
+class Functor2 {
+	double operator() (double x);
+	double operator() (double x, double t);
+};
+
 //  одномерное линейное однородное уравнение теплопроводности
 class HeatEquation
 {
 protected:
-	int X_STEPS = 101, TIME_STEPS = 100;
+	int X_STEPS = 10000, TIME_STEPS = 100;
 	double L, lambda, ro, c, a_sqr;
 	double x_step, time_step = 0.1;
 	double tLeft, tRight;
@@ -36,8 +50,10 @@ public:
 	vector<double> getCurrentTemperature();
 	double getTime();
 
-	void solve(std::string filename, double tEnd = 10.0);
-	void doTimeStep();
+	double solve(std::string filename, double tEnd = 10.0);
+	double doTimeStep();
+	double doOMPTimeStep();
+	double solveOMP(std::string filename, double tEnd = 10.0);
 
 };
 
