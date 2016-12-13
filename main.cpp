@@ -15,13 +15,21 @@ int main() {
 	int t_end = 120;
 	double L = 0.1;
 	char output[] = "output.txt";*/
-	std::string out1("output.txt");
-	std::string out2("outputtest.txt");
+	char out1[] = "output0.txt";
+	char out2[] = "outputtest0.txt";
 	TestHeatEquation Eq1(0.1, 46.0, 7800.0, 460.0, 0.0, 0.0);
 	//TestHeatEquation Eq1(1.0, 1.0, 1.0, 1.0, 0.0, 0.0);
-	cout << "Time of solving:" << Eq1.solve(out1, 1.0) << endl;
-	cout << "Time of OMP solving:" << Eq1.solveOMP(out1, 1.0) << endl;
+	
+	//double wtime2 = Eq1.solveOMP1(out1, 1.0);
+	double wtime1 = Eq1.solve(out1, 1.0);
+	cout << "Time of solving: " << wtime1 << endl;
+	//cout << "Time of OMP solving: " << wtime2 << endl;
+	//ofstream fout("testres3.txt", std::fstream::app);
+	//fout << wtime1 / wtime2 << endl;
+	//fout.close();
 	Eq1.presolve(out2, 1.0);
 	cout << endl;
+	
+	//Eq1.doOMPTimeStep();
 	return 0;
 }

@@ -16,7 +16,7 @@ def plot(data, data1):
     plt.show(block=True)
     return
 
-file = open("D:\\Documents\\sem5\\setki\\heat_conduction_1d_oop\\heat_conduction_1d_oop\\outputtest.txt")
+file = open("D:\\Documents\\sem5\\setki\\heat_conduction_1d_oop\\heat_conduction_1d_oop\\outputtest0.txt")
 time_steps = int(file.readline())
 #N = int(file.readline())
 
@@ -33,7 +33,7 @@ for i in range(time_steps):
     dat1.append(np.array(line))
 data1 = np.array(dat1)
 
-file = open("D:\\Documents\\sem5\\setki\\heat_conduction_1d_oop\\heat_conduction_1d_oop\\output.txt")
+file = open("D:\\Documents\\sem5\\setki\\heat_conduction_1d_oop\\heat_conduction_1d_oop\\output0.txt")
 time_steps = int(file.readline())
 #N = int(file.readline())
 

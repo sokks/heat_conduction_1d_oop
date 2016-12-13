@@ -28,11 +28,11 @@ class Functor2 {
 class HeatEquation
 {
 protected:
-	int X_STEPS = 10000, TIME_STEPS = 100;
+	int X_STEPS = 1024, TIME_STEPS = 100;
 	double L, lambda, ro, c, a_sqr;
 	double x_step, time_step = 0.1;
 	double tLeft, tRight;
-	vector<double> startTemperature, previousTemperature, currentTemperature;
+	double *startTemperature, *previousTemperature, *currentTemperature;
 	double currentTime;
 
 public:
@@ -46,25 +46,27 @@ public:
 	void SetTimeSteps(int newTimeSteps); 
 	void SetTimeStep(double newVal);  //  тоже сбрасывает
 
-	vector<double> getPreviousTemperature();
-	vector<double> getCurrentTemperature();
+	double *getPreviousTemperature();
+	double *getCurrentTemperature();
 	double getTime();
 
-	double solve(std::string filename, double tEnd = 10.0);
+	double solve(char *filename, double tEnd = 10.0);
 	double doTimeStep();
 	double doOMPTimeStep();
-	double solveOMP(std::string filename, double tEnd = 10.0);
+	double doOMPTimeStep1();
+	double solveOMP1(char *filename, double tEnd = 10.0);
+	double solveOMP(char *filename, double tEnd = 10.0);
 
 };
 
 class TestHeatEquation : public HeatEquation {
-	vector<double> previousTemperatureAnalytic, currentTemperatureAnalytic;
+	double *previousTemperatureAnalytic, *currentTemperatureAnalytic;
 public:
 	TestHeatEquation() {}
 	TestHeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight);
 	TestHeatEquation(const TestHeatEquation & anotherEquation);
 	TestHeatEquation & operator= (const TestHeatEquation & anotherEquation);
-	void presolve(std::string filename, double tEnd = 10.0, bool check = false, double eps = 0.001);
+	void presolve(char *filename, double tEnd = 10.0, bool check = false, double eps = 0.001);
 	void doTestStep();
 	bool compare(double eps = 0.001);
 };

@@ -4,23 +4,29 @@
 #include <omp.h>
 #include <Windows.h>
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
 class MatrixDiag
 {
 	int size;
-	vector<double> mainDiag, upDiag, downDiag;
+	double *mainDiag, *upDiag, *downDiag;
+	bool is_static = false;
+	double mainElem, upElem, downElem;
+	bool is_full = false;
+	double **matrix;
 public:
 	MatrixDiag();
-	MatrixDiag(int n, double diagElement, double upElement, double downElement);
+	MatrixDiag(int n, double diagElement, double upElement, double downElement, bool stat = false, bool full = false);
+	MatrixDiag(int n, double *diag, double *up, double *down);
 	MatrixDiag(const MatrixDiag & anotherMatrixDiag);
 	MatrixDiag & operator= (const MatrixDiag & anotherMatrixDiag);
 	~MatrixDiag();
 
 	bool isEmpty();
-	vector<double> sweep(vector<double> F);
-	vector<double> sweepOMP(vector<double> F, int nOfThreads = 4);
-	vector<double> sweepOMP1(vector<double> F);
+	double *sweep(double *F);
+	double *sweepOMP(double *F, int nOfThreads = 4) { return 0; }
+	double *sweepOMP1(double *F) { return 0; }
 };
 
