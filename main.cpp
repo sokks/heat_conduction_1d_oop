@@ -19,7 +19,8 @@ int main() {
 	char out2[] = "outputtest0.txt";
 	TestHeatEquation Eq1(0.1, 46.0, 7800.0, 460.0, 0.0, 0.0);
 	//TestHeatEquation Eq1(1.0, 1.0, 1.0, 1.0, 0.0, 0.0);
-	
+	cout << Eq1.getCurrentTemperature() << endl << endl;
+	cout << Eq1.getPreviousTemperature() << endl << endl;
 	//double wtime2 = Eq1.solveOMP1(out1, 1.0);
 	double wtime1 = Eq1.solve(out1, 1.0);
 	cout << "Time of solving: " << wtime1 << endl;

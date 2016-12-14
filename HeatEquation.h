@@ -32,7 +32,7 @@ protected:
 	double L, lambda, ro, c, a_sqr;
 	double x_step, time_step = 0.1;
 	double tLeft, tRight;
-	double *startTemperature, *previousTemperature, *currentTemperature;
+	Vec startTemperature, previousTemperature, currentTemperature;
 	double currentTime;
 
 public:
@@ -46,8 +46,8 @@ public:
 	void SetTimeSteps(int newTimeSteps); 
 	void SetTimeStep(double newVal);  //  тоже сбрасывает
 
-	double *getPreviousTemperature();
-	double *getCurrentTemperature();
+	Vec getPreviousTemperature();
+	Vec getCurrentTemperature();
 	double getTime();
 
 	double solve(char *filename, double tEnd = 10.0);
@@ -60,7 +60,7 @@ public:
 };
 
 class TestHeatEquation : public HeatEquation {
-	double *previousTemperatureAnalytic, *currentTemperatureAnalytic;
+	Vec previousTemperatureAnalytic, currentTemperatureAnalytic;
 public:
 	TestHeatEquation() {}
 	TestHeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight);

@@ -18,16 +18,12 @@ HeatEquation::HeatEquation(double _L, double _lambda, double _ro, double _c, dou
 	tLeft = _tLeft;
 	tRight = _tRight;
 	currentTime = 0;
-	startTemperature = (double *)malloc(sizeof(double) * X_STEPS);
+	startTemperature = Vec(X_STEPS);
 	for (int i = 0; i < X_STEPS; i++) {
 		startTemperature[i] = fStart(x_step * i, L);  //f1(x_step * i)
 	}
-	previousTemperature = (double *)malloc(sizeof(double) * X_STEPS);
-	for (int i = 0; i < X_STEPS; i++)
-		previousTemperature[i] = 0.0;
-	currentTemperature = (double *)malloc(sizeof(double) * X_STEPS);
-	for (int i = 0; i < X_STEPS; i++)
-		currentTemperature[i] = startTemperature[i];
+	previousTemperature = Vec(X_STEPS);
+	currentTemperature = startTemperature;
 }
 
 HeatEquation::HeatEquation(const HeatEquation & anotherEquation)
@@ -43,15 +39,9 @@ HeatEquation::HeatEquation(const HeatEquation & anotherEquation)
 	time_step = anotherEquation.time_step;
 	tLeft = anotherEquation.tLeft;
 	tRight = anotherEquation.tRight;
-	startTemperature = (double *)malloc(sizeof(double) * X_STEPS); 
-	for (int i = 0; i < X_STEPS; i++)
-		startTemperature[i] = anotherEquation.startTemperature[i];
-	previousTemperature = (double *)malloc(sizeof(double) * X_STEPS);
-	for (int i = 0; i < X_STEPS; i++)
-		previousTemperature[i] = anotherEquation.previousTemperature[i];
-	currentTemperature = (double *)malloc(sizeof(double) * X_STEPS);
-	for (int i = 0; i < X_STEPS; i++)
-		currentTemperature[i] = anotherEquation.currentTemperature[i];
+	startTemperature = anotherEquation.startTemperature;
+	previousTemperature = anotherEquation.previousTemperature;
+	currentTemperature = anotherEquation.currentTemperature;
 	currentTime = anotherEquation.currentTime;
 }
 
@@ -59,7 +49,7 @@ HeatEquation & HeatEquation::operator=(const HeatEquation & anotherEquation)
 {
 	if (this == &anotherEquation)
 		return *this;
-
+	/*
 	if (anotherEquation.X_STEPS != X_STEPS) { //?
 		X_STEPS = anotherEquation.X_STEPS;
 		free(startTemperature);
@@ -69,7 +59,7 @@ HeatEquation & HeatEquation::operator=(const HeatEquation & anotherEquation)
 		free(currentTemperature);
 		currentTemperature = (double *)malloc(sizeof(double) * X_STEPS);
 	}
-
+	*/
 	TIME_STEPS = anotherEquation.TIME_STEPS;
 	L = anotherEquation.L;
 	lambda = anotherEquation.lambda;
@@ -80,44 +70,41 @@ HeatEquation & HeatEquation::operator=(const HeatEquation & anotherEquation)
 	time_step = anotherEquation.time_step;
 	tLeft = anotherEquation.tLeft;
 	tRight = anotherEquation.tRight;
+	/*
 	for (int i = 0; i < X_STEPS; i++)
 		startTemperature[i] = anotherEquation.startTemperature[i];
 	for (int i = 0; i < X_STEPS; i++)
 		previousTemperature[i] = anotherEquation.previousTemperature[i];
 	for (int i = 0; i < X_STEPS; i++)
 		currentTemperature[i] = anotherEquation.currentTemperature[i];
-	currentTime = anotherEquation.currentTime;
+	*/
 
+	startTemperature = anotherEquation.startTemperature;
+	previousTemperature = anotherEquation.previousTemperature;
+	currentTemperature = anotherEquation.currentTemperature;
+
+	currentTime = anotherEquation.currentTime;
+	
 	return *this;
 }
 
 
 HeatEquation::~HeatEquation()
 {
-	if (startTemperature != 0) {
-		free(startTemperature);
-		free(previousTemperature);
-		free(currentTemperature);
-	}
+
 }
 
 void HeatEquation::SetXSteps(int newSteps)
 {
 	X_STEPS = newSteps;
 	x_step = L / (X_STEPS - 1);
-	free(startTemperature);
-	startTemperature = (double *)malloc(sizeof(double) * X_STEPS);
+	startTemperature = Vec(X_STEPS);
 	for (int i = 0; i < X_STEPS; i++) {
 		startTemperature[i] = fStart(x_step * i, L); //f1(x_step * i)
 	}
 	currentTime = 0.0;
-	free(previousTemperature);
-	previousTemperature = (double *)malloc(sizeof(double) * X_STEPS);
-	for (int i = 0; i < X_STEPS; i++)
-		previousTemperature[i] = 0.0;
-	currentTemperature = (double *)malloc(sizeof(double) * X_STEPS);
-	for (int i = 0; i < X_STEPS; i++)
-		currentTemperature[i] = startTemperature[i];
+	previousTemperature = Vec(X_STEPS);
+	currentTemperature = startTemperature;
 }
 
 void HeatEquation::SetTimeSteps(int newTimeSteps)
@@ -129,19 +116,18 @@ void HeatEquation::SetTimeStep(double newVal)
 {
 	time_step = newVal;
 	currentTime = 0.0;
-	free(previousTemperature);
 	for (int i = 0; i < X_STEPS; i++) {
 		previousTemperature[i] = 0.0;
 		currentTemperature[i] = startTemperature[i];
 	}
 }
 
-double * HeatEquation::getPreviousTemperature()
+Vec HeatEquation::getPreviousTemperature()
 {
 	return previousTemperature;
 }
 
-double * HeatEquation::getCurrentTemperature()
+Vec HeatEquation::getCurrentTemperature()
 {
 	return currentTemperature;
 }
@@ -165,11 +151,15 @@ double HeatEquation::solve(char *filename, double tEnd)
 	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
 		for (int j = 0; j < X_STEPS; j++) {
-			fout << currentTemperature[i] << " ";
+			fout << currentTemperature[j] << " ";
 		}
 		fout << std::endl;
 		runtime += doTimeStep();
-	} // не вывожу последнюю температуру?
+	} 
+	for (int j = 0; j < X_STEPS; j++) {
+		fout << currentTemperature[j] << " ";
+	}
+	fout << std::endl;
 	fout.close();
 	return runtime;
 }
@@ -179,21 +169,19 @@ double HeatEquation::doTimeStep()
 	currentTime += time_step;
 	__int64 ctr1 = 0, ctr2 = 0, freq = 0;
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr1);
-	for (int i = 0; i < X_STEPS; i++)
-		previousTemperature[i] = currentTemperature[i];
-	free(currentTemperature);
-	currentTemperature = 0;
+
+	previousTemperature = currentTemperature;
 	double A, B, C;
 	double tmp = ro * c / time_step;
 	A = C = lambda / (x_step * x_step);
 	B = 2 * lambda / (x_step * x_step) + tmp;
 	MatrixDiag S(X_STEPS, -B, A, C);
-	double *F = (double *)malloc(sizeof(double) * X_STEPS);
+	Vec F(X_STEPS);
 	for (int i = 0; i < X_STEPS; i++) {
 		F[i] = -tmp * previousTemperature[i];
 	}
-	currentTemperature = S.sweep(F); // исправить в классе матрицы!
-	free(F);
+	currentTemperature = S.sweep(F);
+
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr2);
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
 	return ((ctr2 - ctr1) * 1.0 / freq); //  время в микросекундах
@@ -204,23 +192,21 @@ double HeatEquation::doOMPTimeStep()
 	currentTime += time_step;
 	__int64 ctr1 = 0, ctr2 = 0, freq = 0;
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr1);
-	for (int i = 0; i < X_STEPS; i++)
-		previousTemperature[i] = currentTemperature[i];
-	free(currentTemperature);
-	currentTemperature = 0;
+
+	previousTemperature = currentTemperature;
 	double A, B, C;
 	double tmp;
 	tmp = ro * c / time_step;
 	A = C = lambda / (x_step * x_step);
 	B = 2 * lambda / (x_step * x_step) + tmp;
 	MatrixDiag S(X_STEPS, -B, A, C, true);
-	double *F = (double *)malloc(sizeof(double) * X_STEPS);
-#pragma omp parallel for schedule (guided, 100)
+	Vec F(X_STEPS);
+#pragma omp parallel for schedule(static)
 	for (int i = 0; i < X_STEPS; i++) {
 		F[i] = -tmp * previousTemperature[i];
 	}
 	currentTemperature = S.sweepOMP(F, 4);
-	free(F);
+
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr2);
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
 	return ((ctr2 - ctr1) * 1.0 / freq); //  время в микросекундах
@@ -231,25 +217,21 @@ double HeatEquation::doOMPTimeStep1()
 	currentTime += time_step;
 	__int64 ctr1 = 0, ctr2 = 0, freq = 0;
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr1);
-	for (int i = 0; i < X_STEPS; i++)
-		previousTemperature[i] = currentTemperature[i];
-	free(currentTemperature);
-	currentTemperature = 0;
+
+	previousTemperature = currentTemperature;
 	double A, B, C;
 	double tmp;
 	tmp = ro * c / time_step;
 	A = C = lambda / (x_step * x_step);
 	B = 2 * lambda / (x_step * x_step) + tmp;
 	MatrixDiag S(X_STEPS, -B, A, C);
-	double *F = (double *)malloc(sizeof(double) * X_STEPS);
-
+	Vec F(X_STEPS);
 #pragma omp parallel for schedule (static)
 	for (int i = 0; i < X_STEPS; i++) {
 		F[i] = -tmp * previousTemperature[i];
 	}
-	
-	currentTemperature = S.sweepOMP1(F); // BAD! maybe safe pointer class?
-	free(F);
+	currentTemperature = S.sweepOMP1(F);
+
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr2);
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
 	return ((ctr2 - ctr1) * 1.0 / freq); //  время в микросекундах
@@ -262,18 +244,21 @@ double HeatEquation::solveOMP1(char *filename, double tEnd)
 	}
 	double runtime = 0.0;
 	currentTime = 0;
-	for (int i = 0; i < X_STEPS; i++)
-		currentTemperature[i] = startTemperature[i];
+	currentTemperature = startTemperature;
 	ofstream fout;
 	fout.open(filename);
 	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
 		for (int j = 0; j < X_STEPS; j++) {
-			fout << currentTemperature[i] << " ";
+			fout << currentTemperature[j] << " ";
 		}
 		fout << std::endl;
 		runtime += doOMPTimeStep1();
 	}
+	for (int j = 0; j < X_STEPS; j++) {
+		fout << currentTemperature[j] << " ";
+	}
+	fout << std::endl;
 	fout.close();
 	return runtime;
 }
@@ -285,18 +270,21 @@ double HeatEquation::solveOMP(char *filename, double tEnd)
 	}
 	double runtime = 0.0;
 	currentTime = 0;
-	for (int i = 0; i < X_STEPS; i++)
-		currentTemperature[i] = startTemperature[i];
+	currentTemperature = startTemperature;
 	ofstream fout;
 	fout.open(filename);
 	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
 		for (int j = 0; j < X_STEPS; j++) {
-			fout << currentTemperature[i] << " ";
+			fout << currentTemperature[j] << " ";
 		}
 		fout << std::endl;
 		runtime += doOMPTimeStep();
 	}
+	for (int j = 0; j < X_STEPS; j++) {
+		fout << currentTemperature[j] << " ";
+	}
+	fout << std::endl;
 	fout.close();
 	return runtime;
 }
@@ -324,18 +312,20 @@ double u1(double x, double t)
 TestHeatEquation::TestHeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight):
 									HeatEquation(_L, _lambda, _ro, _c, _tLeft, _tRight)
 {
+	previousTemperatureAnalytic = Vec(X_STEPS);
+	currentTemperatureAnalytic = startTemperature;
+	/*
 	previousTemperatureAnalytic = (double *)malloc(sizeof(double) * X_STEPS);
 	for (int i = 0; i < X_STEPS; i++)
 		previousTemperatureAnalytic[i] = 0.0;
 	currentTemperatureAnalytic = (double *)malloc(sizeof(double) * X_STEPS);
 	for (int i = 0; i < X_STEPS; i++)
 		currentTemperatureAnalytic[i] = startTemperature[i];
+	*/
 }
 
-TestHeatEquation::TestHeatEquation(const TestHeatEquation & anotherEquation) : 
-									HeatEquation((HeatEquation)anotherEquation)
+TestHeatEquation::TestHeatEquation(const TestHeatEquation & anotherEquation)
 {
-	/*
 	X_STEPS = anotherEquation.X_STEPS;
 	TIME_STEPS = anotherEquation.TIME_STEPS;
 	L = anotherEquation.L;
@@ -351,13 +341,16 @@ TestHeatEquation::TestHeatEquation(const TestHeatEquation & anotherEquation) :
 	previousTemperature = anotherEquation.previousTemperature;
 	currentTemperature = anotherEquation.currentTemperature;
 	currentTime = anotherEquation.currentTime;
-	*/
+	previousTemperatureAnalytic = anotherEquation.previousTemperatureAnalytic;
+	currentTemperatureAnalytic = anotherEquation.currentTemperatureAnalytic;
+	/*
 	previousTemperatureAnalytic = (double *)malloc(sizeof(double) * X_STEPS);
 	for (int i = 0; i < X_STEPS; i++)
 		previousTemperatureAnalytic[i] = anotherEquation.previousTemperatureAnalytic[i];
 	currentTemperatureAnalytic = (double *)malloc(sizeof(double) * X_STEPS);
 	for (int i = 0; i < X_STEPS; i++)
 		currentTemperatureAnalytic[i] = anotherEquation.currentTemperatureAnalytic[i];
+	*/
 }
 
 TestHeatEquation & TestHeatEquation::operator=(const TestHeatEquation & anotherEquation)
@@ -366,8 +359,24 @@ TestHeatEquation & TestHeatEquation::operator=(const TestHeatEquation & anotherE
 		return *this;
 	}
 
-	(HeatEquation)(*this) = (HeatEquation)anotherEquation;
+	TIME_STEPS = anotherEquation.TIME_STEPS;
+	L = anotherEquation.L;
+	lambda = anotherEquation.lambda;
+	ro = anotherEquation.ro;
+	c = anotherEquation.c;
+	a_sqr = anotherEquation.a_sqr;
+	x_step = anotherEquation.x_step;
+	time_step = anotherEquation.time_step;
+	tLeft = anotherEquation.tLeft;
+	tRight = anotherEquation.tRight;
+	startTemperature = anotherEquation.startTemperature;
+	previousTemperature = anotherEquation.previousTemperature;
+	currentTemperature = anotherEquation.currentTemperature;
+	currentTemperatureAnalytic = anotherEquation.currentTemperatureAnalytic;
+	previousTemperatureAnalytic = anotherEquation.previousTemperatureAnalytic;
+	currentTime = anotherEquation.currentTime;
 	
+	/*
 	if (X_STEPS != anotherEquation.X_STEPS) {
 		free(previousTemperatureAnalytic);
 		previousTemperatureAnalytic = (double *)malloc(sizeof(double) * X_STEPS); 
@@ -378,6 +387,7 @@ TestHeatEquation & TestHeatEquation::operator=(const TestHeatEquation & anotherE
 		for (int i = 0; i < X_STEPS; i++)
 			currentTemperatureAnalytic[i] = anotherEquation.currentTemperatureAnalytic[i];
 	}
+	*/
 	return *this;
 }
 
@@ -387,14 +397,13 @@ void TestHeatEquation::presolve(char *filename, double tEnd, bool check, double 
 		SetTimeStep(tEnd / TIME_STEPS);
 	}
 	currentTime = 0;
-	for (int i = 0; i < X_STEPS; i++)
-		currentTemperatureAnalytic[i] = startTemperature[i];
+	currentTemperatureAnalytic = startTemperature;
 	ofstream fout;
 	fout.open(filename);
 	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
 		for (int j = 0; j < X_STEPS; j++) {
-			fout << currentTemperatureAnalytic[i] << " ";
+			fout << currentTemperatureAnalytic[j] << " ";
 		}
 		fout << std::endl;
 		doTestStep();
@@ -402,6 +411,10 @@ void TestHeatEquation::presolve(char *filename, double tEnd, bool check, double 
 			compare(eps); // write somewhere
 		}
 	}
+	for (int j = 0; j < X_STEPS; j++) {
+		fout << currentTemperatureAnalytic[j] << " ";
+	}
+	fout << std::endl;
 	fout.close();
 }
 

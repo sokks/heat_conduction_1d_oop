@@ -6,7 +6,7 @@ MatrixDiag::MatrixDiag()
 {
 	size = 0;
 	mainElem = upElem = downElem = 0;
-	mainDiag = upDiag = downDiag = 0;
+	mainDiag = upDiag = downDiag = Vec();
 	matrix = 0;
 }
 
@@ -19,19 +19,13 @@ MatrixDiag::MatrixDiag(int n, double diagElement, double upElement, double downE
 		mainElem = diagElement;
 		upElem = upElement;
 		downElem = downElement;
-		mainDiag = upDiag = downDiag = 0;
+		mainDiag = upDiag = downDiag = Vec();
 	}
 	else {
 		mainElem = upElem = downElem = 0;
-		mainDiag = (double *)malloc(sizeof(double) * size);
-		for (int i = 0; i < size; i++)
-			mainDiag[i] = diagElement;
-		upDiag = (double *)malloc(sizeof(double) * size);
-		for (int i = 0; i < size; i++)
-			upDiag[i] = upElement;
-		downDiag = (double *)malloc(sizeof(double) * size);
-		for (int i = 0; i < size; i++)
-			downDiag[i] = downElement;
+		mainDiag = Vec(size, diagElement);
+		upDiag = Vec(size, upElement);
+		downDiag = Vec(size, downElement);
 	}
 
 	if (full) {
@@ -59,19 +53,13 @@ MatrixDiag::MatrixDiag(int n, double diagElement, double upElement, double downE
 	}
 }
 
-MatrixDiag::MatrixDiag(int n, double *diag, double *up, double *down)
+MatrixDiag::MatrixDiag(int n, Vec diag, Vec up, Vec down)
 {
 	size = n;
 	mainElem = upElem = downElem = 0;
-	mainDiag = (double *)malloc(sizeof(double) * size);
-	for (int i = 0; i < size; i++)
-		mainDiag[i] = diag[i];
-	upDiag = (double *)malloc(sizeof(double) * size);
-	for (int i = 0; i < size; i++)
-		upDiag[i] = up[i];
-	downDiag = (double *)malloc(sizeof(double) * size);
-	for (int i = 0; i < size; i++)
-		downDiag[i] = down[i];
+	mainDiag = diag;
+	upDiag = up;
+	downDiag = down;
 }
 
 MatrixDiag::MatrixDiag(const MatrixDiag & anotherMatrixDiag)
@@ -80,7 +68,7 @@ MatrixDiag::MatrixDiag(const MatrixDiag & anotherMatrixDiag)
 
 	if (size == 0) {
 		mainElem = upElem = downElem = 0;
-		mainDiag = upDiag = downDiag = 0;
+		mainDiag = upDiag = downDiag = Vec();
 		matrix = 0;
 		return;
 	}
@@ -90,19 +78,13 @@ MatrixDiag::MatrixDiag(const MatrixDiag & anotherMatrixDiag)
 		mainElem = anotherMatrixDiag.mainElem;
 		upElem = anotherMatrixDiag.upElem;
 		downElem = anotherMatrixDiag.downElem;
-		mainDiag = upDiag = downDiag = 0;
+		mainDiag = upDiag = downDiag = Vec();
 	}
 	else {
 		mainElem = upElem = downElem = 0;
-		mainDiag = (double *)malloc(sizeof(double) * size);
-		for (int i = 0; i < size; i++)
-			mainDiag[i] = anotherMatrixDiag.mainDiag[i];
-		upDiag = (double *)malloc(sizeof(double) * size);
-		for (int i = 0; i < size; i++)
-			upDiag[i] = anotherMatrixDiag.upDiag[i];
-		downDiag = (double *)malloc(sizeof(double) * size);
-		for (int i = 0; i < size; i++)
-			downDiag[i] = anotherMatrixDiag.downDiag[i];
+		mainDiag = anotherMatrixDiag.mainDiag;
+		upDiag = anotherMatrixDiag.upDiag;
+		downDiag = anotherMatrixDiag.downDiag;
 	}
 
 	if (anotherMatrixDiag.is_full == true) {
@@ -141,12 +123,7 @@ MatrixDiag & MatrixDiag::operator=(const MatrixDiag & anotherMatrixDiag) // CHEC
 
 	if (anotherMatrixDiag.is_static) {
 		is_static = true;
-		if (size != 0) {
-			free(mainDiag);
-			free(upDiag);
-			free(downDiag);
-		}
-		mainDiag = upDiag = downDiag = 0;
+		mainDiag = upDiag = downDiag = Vec();
 		mainElem = anotherMatrixDiag.mainElem;
 		upElem = anotherMatrixDiag.upElem;
 		downElem = anotherMatrixDiag.downElem;
@@ -154,52 +131,38 @@ MatrixDiag & MatrixDiag::operator=(const MatrixDiag & anotherMatrixDiag) // CHEC
 	else {
 		is_static = false;
 		mainElem = upElem = downElem = 0;
+		mainDiag = anotherMatrixDiag.mainDiag;
+		upDiag = anotherMatrixDiag.upDiag;
+		downDiag = anotherMatrixDiag.downDiag;
+	}
+	if (anotherMatrixDiag.is_full) {
+		is_full = true;
+
 		if (size != anotherMatrixDiag.size) {
-			int tmp = size;
-			size = anotherMatrixDiag.size;
-			if (tmp != 0) {
-				free(mainDiag);
-				free(upDiag);
-				free(downDiag);
-			}
 			if (size != 0) {
-				mainDiag = (double *)malloc(sizeof(double) * size);
-				upDiag = (double *)malloc(sizeof(double) * size);
-				downDiag = (double *)malloc(sizeof(double) * size);
-			}
-			else {
-				mainDiag = upDiag = downDiag = 0;
-			}
-			if (is_full) {
-				for (int i = 0; i < tmp; i++) {
+				for (int i = 0; i < size; i++)
 					free(matrix[i]);
-				}
 				free(matrix);
 			}
-			if (size != 0) {
-				matrix = (double **)malloc(sizeof(double *) * size);
-				for (int i = 0; i < size; i++)
-					matrix[i] = (double *)malloc(sizeof(double) * size);
-			}
-			else {
-				matrix = 0;
-			}
+			size = anotherMatrixDiag.size;
+			matrix = (double **)malloc(sizeof(double *) * size);
+			for (int i = 0; i < size; i++)
+				matrix[i] = (double *)malloc(sizeof(double) * size);
 		}
-
-		for (int i = 0; i < size; i++)
-			mainDiag[i] = anotherMatrixDiag.mainDiag[i];
-		for (int i = 0; i < size; i++)
-			upDiag[i] = anotherMatrixDiag.upDiag[i];
-		for (int i = 0; i < size; i++)
-			downDiag[i] = anotherMatrixDiag.downDiag[i];
-	}
-
-	if (anotherMatrixDiag.is_full) {
-		is_full = anotherMatrixDiag.is_full;
 		
 		for (int i = 0; i < size; i++)
 			for (int j = 0; j < size; j++)
 				matrix[i][j] = anotherMatrixDiag.matrix[i][j];
+	}
+	else {
+		if (is_full && (size != 0)) {
+			for (int i = 0; i < size; i++)
+				free(matrix[i]);
+			free(matrix);
+			
+		}
+		is_full = false;
+		size = anotherMatrixDiag.size;
 	}
 
 	return *this;
@@ -210,11 +173,7 @@ MatrixDiag::~MatrixDiag()
 	if (size == 0) {
 		return;
 	}
-	if (!is_static) {
-		free(mainDiag);
-		free(upDiag);
-		free(downDiag);
-	}
+
 	if (is_full) {
 		for (int i = 0; i < size; i++)
 			free(matrix[i]);
@@ -227,18 +186,11 @@ bool MatrixDiag::isEmpty()
 	return (size == 0);
 }
 
-double *MatrixDiag::sweep(double *F)
+Vec MatrixDiag::sweep(Vec F)
 {
-	double *X = (double *)malloc(sizeof(double) * size);
-	for (int i = 0; i < size; i++)
-		X[i] = 0.0;
-	double *alfa = (double *)malloc(sizeof(double) * size);
-	for (int i = 0; i < size; i++)
-		alfa[i] = 0.0;
-	double *beta = (double *)malloc(sizeof(double) * size);
-	for (int i = 0; i < size; i++)
-		beta[i] = 0.0;
-
+	Vec X(size);
+	Vec alfa(size);
+	Vec beta(size);
 	//__int64 ctr1 = 0, ctr2 = 0, freq = 0;
 	//QueryPerformanceCounter((LARGE_INTEGER *)&ctr1);
 	alfa[1] = -upDiag[0] / mainDiag[0];
@@ -258,9 +210,6 @@ double *MatrixDiag::sweep(double *F)
 	//ofstream fout("wtime1.txt", std::fstream::app);
 	//fout << wtime << endl;
 	//fout.close();
-	
-	free(alfa);
-	free(beta);
 
 	return X;
 }
