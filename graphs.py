@@ -12,7 +12,7 @@ def plot(data, data1):
             plt.legend(("count", "real"))
             plt.title('Temperature_changes')
             plt.grid(True)
-            plt.pause(0.01)
+            plt.pause(0.1)
     plt.show(block=True)
     return
 

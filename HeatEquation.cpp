@@ -20,7 +20,22 @@ HeatEquation::HeatEquation(double _L, double _lambda, double _ro, double _c, dou
 	currentTime = 0;
 	startTemperature = vector<double>(X_STEPS);
 	for (int i = 0; i < X_STEPS; i++) {
-		startTemperature[i] = fStart(x_step * i, L);  //f1(x_step * i)
+		startTemperature[i] = fStart(x_step * i);  //f1(x_step * i)
+	}
+	previousTemperature = vector<double>(X_STEPS, 0.0);
+	currentTemperature = startTemperature;
+}
+
+HeatEquation::HeatEquation(double _L, double _a)
+{
+	L = _L;
+	x_step = L / (X_STEPS - 1);
+	lambda = ro = c = 0.0;
+	a_sqr = _a;
+	currentTime = 0.0;
+	startTemperature = vector<double>(X_STEPS);
+	for (int i = 0; i < X_STEPS; i++) {
+		startTemperature[i] = fStart(x_step * i);  //f1(x_step * i)
 	}
 	previousTemperature = vector<double>(X_STEPS, 0.0);
 	currentTemperature = startTemperature;
@@ -66,7 +81,6 @@ HeatEquation & HeatEquation::operator=(const HeatEquation & anotherEquation)
 	return *this;
 }
 
-
 HeatEquation::~HeatEquation()
 {
 }
@@ -77,7 +91,7 @@ void HeatEquation::SetXSteps(int newSteps)
 	x_step = L / (X_STEPS - 1);
 	startTemperature.resize(X_STEPS);
 	for (int i = 0; i < X_STEPS; i++) {
-		startTemperature[i] = fStart(x_step * i, L); //f1(x_step * i)
+		startTemperature[i] = fStart(x_step * i);
 	}
 	currentTime = 0.0;
 	previousTemperature.clear();
@@ -112,7 +126,7 @@ double HeatEquation::getTime()
 	return currentTime;
 }
 
-double HeatEquation::solve(std::string filename, double tEnd)
+double HeatEquation::solve_implicit(std::string filename, double tEnd)
 {
 	if (tEnd - time_step * TIME_STEPS > EPS) {
 		SetTimeStep(tEnd / TIME_STEPS);
@@ -137,91 +151,59 @@ double HeatEquation::solve(std::string filename, double tEnd)
 double HeatEquation::doTimeStep()
 {
 	currentTime += time_step;
+
 	__int64 ctr1 = 0, ctr2 = 0, freq = 0;
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr1);
 	previousTemperature = currentTemperature;
-	double A, B, C;
-	double tmp = ro * c / time_step;
-	A = C = lambda / (x_step * x_step);
-	B = 2 * lambda / (x_step * x_step) + tmp;
+
+	double A, B, C, tL, tR;
+	double tmp = time_step / (x_step * x_step);
+	A = C = a_sqr * tmp;
+	B = 2 * a_sqr * tmp + 1;
 	MatrixDiag S(X_STEPS, -B, A, C);
 	vector<double> F(X_STEPS);
 	for (int i = 0; i < X_STEPS; i++) {
-		F[i] = -tmp * previousTemperature[i];
+		F[i] = -previousTemperature[i];
 	}
-	currentTemperature = S.sweep(F);
+	tL = mu1(currentTime);
+	tR = mu2(currentTime);
+	currentTemperature = S.sweep(F, tL, tR);
+
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr2);
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
-	return ((ctr2 - ctr1) * 1.0 / freq); //  время в микросекундах
+
+	return ((ctr2 - ctr1) * 1.0 / freq);
 }
 
-double HeatEquation::doOMPTimeStep()
+double HeatEquation::fStart(double x)
 {
-	currentTime += time_step;
-	__int64 ctr1 = 0, ctr2 = 0, freq = 0;
-	QueryPerformanceCounter((LARGE_INTEGER *)&ctr1);
-	previousTemperature = currentTemperature;
-	double A, B, C;
-	double tmp;
-	tmp = ro * c / time_step;
-	A = C = lambda / (x_step * x_step);
-	B = 2 * lambda / (x_step * x_step) + tmp;
-	MatrixDiag S(X_STEPS, -B, A, C);
-	vector<double> F(X_STEPS);
-#pragma omp parallel for schedule (guided, 10)
-	for (int i = 0; i < X_STEPS; i++) {
-		F[i] = -tmp * previousTemperature[i];
-	}
-	currentTemperature = S.sweepOMP1(F);
-	QueryPerformanceCounter((LARGE_INTEGER *)&ctr2);
-	QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
-	return ((ctr2 - ctr1) * 1.0 / freq); //  время в микросекундах
+	return 2 * sin(M_PI * x / L);
 }
 
-double HeatEquation::solveOMP(std::string filename, double tEnd)
+double HeatEquation::mu1(double t)
 {
-	if (tEnd - time_step * TIME_STEPS > EPS) {
-		SetTimeStep(tEnd / TIME_STEPS);
-	}
-	double runtime = 0.0;
-	currentTime = 0;
-	currentTemperature = startTemperature;
-	ofstream fout;
-	fout.open(filename);
-	fout << TIME_STEPS << std::endl;
-	for (int i = 0; i < TIME_STEPS; i++) {
-		for (vector<double>::iterator it = currentTemperature.begin(); it != currentTemperature.end(); ++it) {
-			fout << *it << " ";
-		}
-		fout << std::endl;
-		runtime += doOMPTimeStep();
-	}
-	fout.close();
-	return runtime;
+	return 0.0;
 }
 
-double fStart(double x, double h)
+double HeatEquation::mu2(double t)
 {
-	return 2 * sin(M_PI * x / h);
+	return 0.0;
 }
 
-double testRes(double x, double t, double a, double h)
+double TestHeatEquation::testRes(double x, double t)
 {
-	return 2 * sin(M_PI * x / h) * exp( (-a) * M_PI * M_PI * t / (h * h) );
-}
-
-double f1(double x)
-{
-	return sin(M_PI * x);
-}
-
-double u1(double x, double t)
-{
-	return exp(-M_PI * M_PI * t) * sin(M_PI * x);
+	return 2 * sin(M_PI * x / L) * exp( (-a_sqr) * M_PI * M_PI * t / (L * L) );
 }
 
 TestHeatEquation::TestHeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight):
-									HeatEquation(_L, _lambda, _ro, _c, _tLeft, _tRight)
+	HeatEquation(_L, _lambda, _ro, _c, _tLeft, _tRight)
+{
+	previousTemperatureAnalytic = vector<double>(X_STEPS, 0.0);
+	currentTemperatureAnalytic = startTemperature;
+}
+
+TestHeatEquation::TestHeatEquation(double _L, double _a): 
+	HeatEquation(_L, _a)
 {
 	previousTemperatureAnalytic = vector<double>(X_STEPS, 0.0);
 	currentTemperatureAnalytic = startTemperature;
@@ -299,7 +281,7 @@ void TestHeatEquation::doTestStep()
 	currentTime += time_step;
 	previousTemperatureAnalytic = currentTemperatureAnalytic;
 	for (int i = 0; i < X_STEPS; i++) {
-		currentTemperatureAnalytic[i] = testRes(x_step * i, currentTime, a_sqr, L);  //u1(x_step * i, currentTime)
+		currentTemperatureAnalytic[i] = testRes(x_step * i, currentTime);
 	}
 }
 

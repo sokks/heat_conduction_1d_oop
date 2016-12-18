@@ -7,12 +7,6 @@
 #define EPS 0.00001
 using namespace std;
 
-double fStart(double x, double h);
-double testRes(double x, double t, double a, double h);
-
-double f1(double x);
-double u1(double x, double t);
-
 class Functor1 {
 	double operator() ();
 	double operator() (double x, double h);
@@ -28,16 +22,21 @@ class Functor2 {
 class HeatEquation
 {
 protected:
-	int X_STEPS = 10000, TIME_STEPS = 100;
-	double L, lambda, ro, c, a_sqr;
+	int X_STEPS = 100, TIME_STEPS = 100;
+	double L = 1.0, lambda, ro, c, a_sqr;
 	double x_step, time_step = 0.1;
-	double tLeft, tRight;
+	double tLeft = 0.0, tRight = 0.0;
 	vector<double> startTemperature, previousTemperature, currentTemperature;
 	double currentTime;
+
+	double fStart(double x);
+	double mu1(double t);
+	double mu2(double t);
 
 public:
 	HeatEquation();
 	HeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight);
+	HeatEquation(double _L, double _a);
 	HeatEquation(const HeatEquation & anotherEquation);
 	HeatEquation & operator= (const HeatEquation & anotherEquation);
 	~HeatEquation();
@@ -50,18 +49,18 @@ public:
 	vector<double> getCurrentTemperature();
 	double getTime();
 
-	double solve(std::string filename, double tEnd = 10.0);
+	double solve_implicit(std::string filename, double tEnd = 10.0);
+	//double solve_explicit(std::string filename, double tEnd = 10.0);
 	double doTimeStep();
-	double doOMPTimeStep();
-	double solveOMP(std::string filename, double tEnd = 10.0);
-
 };
 
 class TestHeatEquation : public HeatEquation {
 	vector<double> previousTemperatureAnalytic, currentTemperatureAnalytic;
+	double testRes(double x, double t);
 public:
 	TestHeatEquation() {}
 	TestHeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight);
+	TestHeatEquation(double _L, double _a);
 	TestHeatEquation(const TestHeatEquation & anotherEquation);
 	TestHeatEquation & operator= (const TestHeatEquation & anotherEquation);
 	void presolve(std::string filename, double tEnd = 10.0, bool check = false, double eps = 0.001);
