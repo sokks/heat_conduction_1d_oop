@@ -165,7 +165,7 @@ double HeatEquation::solve(char *filename, double tEnd)
 	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
 		for (int j = 0; j < X_STEPS; j++) {
-			fout << currentTemperature[i] << " ";
+			fout << currentTemperature[j] << " ";
 		}
 		fout << std::endl;
 		runtime += doTimeStep();
@@ -192,7 +192,7 @@ double HeatEquation::doTimeStep()
 	for (int i = 0; i < X_STEPS; i++) {
 		F[i] = -tmp * previousTemperature[i];
 	}
-	currentTemperature = S.sweep(F); // исправить в классе матрицы!
+	currentTemperature = S.sweep(F);
 	free(F);
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr2);
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
@@ -204,16 +204,18 @@ double HeatEquation::doOMPTimeStep()
 	currentTime += time_step;
 	__int64 ctr1 = 0, ctr2 = 0, freq = 0;
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr1);
+
 	for (int i = 0; i < X_STEPS; i++)
 		previousTemperature[i] = currentTemperature[i];
 	free(currentTemperature);
 	currentTemperature = 0;
+
 	double A, B, C;
 	double tmp;
 	tmp = ro * c / time_step;
 	A = C = lambda / (x_step * x_step);
 	B = 2 * lambda / (x_step * x_step) + tmp;
-	MatrixDiag S(X_STEPS, -B, A, C, true);
+	MatrixDiag S(X_STEPS, -B, A, C, false, true);
 	double *F = (double *)malloc(sizeof(double) * X_STEPS);
 #pragma omp parallel for schedule (guided, 100)
 	for (int i = 0; i < X_STEPS; i++) {
@@ -269,7 +271,7 @@ double HeatEquation::solveOMP1(char *filename, double tEnd)
 	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
 		for (int j = 0; j < X_STEPS; j++) {
-			fout << currentTemperature[i] << " ";
+			fout << currentTemperature[j] << " ";
 		}
 		fout << std::endl;
 		runtime += doOMPTimeStep1();
@@ -292,7 +294,7 @@ double HeatEquation::solveOMP(char *filename, double tEnd)
 	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
 		for (int j = 0; j < X_STEPS; j++) {
-			fout << currentTemperature[i] << " ";
+			fout << currentTemperature[j] << " ";
 		}
 		fout << std::endl;
 		runtime += doOMPTimeStep();
@@ -394,7 +396,7 @@ void TestHeatEquation::presolve(char *filename, double tEnd, bool check, double 
 	fout << TIME_STEPS << std::endl;
 	for (int i = 0; i < TIME_STEPS; i++) {
 		for (int j = 0; j < X_STEPS; j++) {
-			fout << currentTemperatureAnalytic[i] << " ";
+			fout << currentTemperatureAnalytic[j] << " ";
 		}
 		fout << std::endl;
 		doTestStep();
@@ -409,7 +411,7 @@ void TestHeatEquation::doTestStep()
 {
 	currentTime += time_step;
 	for (int i = 0; i < X_STEPS; i++) {
-		previousTemperatureAnalytic = currentTemperatureAnalytic;
+		previousTemperatureAnalytic[i] = currentTemperatureAnalytic[i];
 		currentTemperatureAnalytic[i] = testRes(x_step * i, currentTime, a_sqr, L);  //u1(x_step * i, currentTime)
 	}
 }

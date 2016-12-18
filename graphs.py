@@ -33,7 +33,7 @@ for i in range(time_steps):
     dat1.append(np.array(line))
 data1 = np.array(dat1)
 
-file = open("D:\\Documents\\sem5\\setki\\heat_conduction_1d_oop\\heat_conduction_1d_oop\\output0.txt")
+file = open("D:\\Documents\\sem5\\setki\\heat_conduction_1d_oop\\heat_conduction_1d_oop\\output03.txt")
 time_steps = int(file.readline())
 #N = int(file.readline())
 

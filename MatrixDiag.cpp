@@ -264,7 +264,7 @@ double *MatrixDiag::sweep(double *F)
 
 	return X;
 }
-/*
+
 double *MatrixDiag::sweepOMP(double *F, int nOfThreads)
 {
 	int curNOfThreads = omp_get_num_threads();
@@ -288,7 +288,7 @@ double *MatrixDiag::sweepOMP(double *F, int nOfThreads)
 				matrix[i][i] -= koef;
 				F[i] -= F[i - 1] * koef;
 			}
-//#pragma omp barrier
+#pragma omp barrier
 			start = (k + 1) * m - 3;
 			end = 0;
 			tmp = start + 2;
@@ -298,7 +298,7 @@ double *MatrixDiag::sweepOMP(double *F, int nOfThreads)
 				matrix[i][tmp] = -matrix[i + 1][tmp] * koef;
 				F[i] -= F[i + 1] * koef;
 			}
-//#pragma omp barrier
+#pragma omp barrier
 			start = k * m;
 			end = (k + 1) * m - 1;
 			for (int i = start; i < end; i++) {
@@ -314,7 +314,7 @@ double *MatrixDiag::sweepOMP(double *F, int nOfThreads)
 				 matrix[i][tmp] = -matrix[i - 1][tmp] * koef;
 				 F[i] -= F[i - 1] * koef;
 			 }
-//#pragma omp barrier
+#pragma omp barrier
 			 start = (k + 1) * m - 3;
 			 end = k * m - 1;
 			 tmp = start + 2;
@@ -325,7 +325,7 @@ double *MatrixDiag::sweepOMP(double *F, int nOfThreads)
 				 matrix[i][end] -= -matrix[i + 1][end] * koef;
 				 F[i] -= F[i + 1] * koef;
 			 }
-//#pragma omp barrier
+#pragma omp barrier
 			 start = k * m;
 			 end = (k + 1) * m - 1;
 			 for (int i = start; i < end; i++) {
@@ -341,7 +341,7 @@ double *MatrixDiag::sweepOMP(double *F, int nOfThreads)
 				 matrix[i][tmp] = -matrix[i - 1][tmp] * koef;
 				 F[i] -= F[i - 1] * koef;
 			 }
-//#pragma omp barrier
+#pragma omp barrier
 			 start = (k + 1) * m - 3;
 			 end = k * m - 1;
 			 tmp = start + 2;
@@ -352,7 +352,7 @@ double *MatrixDiag::sweepOMP(double *F, int nOfThreads)
 				 matrix[i][end] -= -matrix[i + 1][end] * koef;
 				 F[i] -= F[i + 1] * koef;
 			 }
-//#pragma omp barrier
+#pragma omp barrier
 			 start = k * m;
 			 end = (k + 1) * m - 1;
 			 for (int i = start; i < end; i++) {
@@ -362,7 +362,10 @@ double *MatrixDiag::sweepOMP(double *F, int nOfThreads)
 	 
 	}
 
-	vector<double> uptmp(nOfThreads), downtmp(nOfThreads), maintmp(nOfThreads), ftmp(nOfThreads);
+	double *uptmp = (double *)malloc(sizeof(double) * nOfThreads);
+	double *downtmp = (double *)malloc(sizeof(double) * nOfThreads);
+	double *maintmp = (double *)malloc(sizeof(double) * nOfThreads);
+	double *ftmp = (double *)malloc(sizeof(double) * nOfThreads);
 	maintmp[0] = matrix[m - 1][m - 1];
 	maintmp[nOfThreads - 1] = matrix[size - 1][size - 1];
 	upDiag[0] = matrix[m - 1][2 * m - 1];
@@ -376,10 +379,15 @@ double *MatrixDiag::sweepOMP(double *F, int nOfThreads)
 		ftmp[i] = F[(i + 1) * m - 1];
 	}
 	MatrixDiag L(nOfThreads, maintmp, uptmp, downtmp);
-	vector<double> xtmp = L.sweep(ftmp);
+	double *xtmp = L.sweep(ftmp);
 	for (int i = 0; i < nOfThreads; i++) {
 		X[(i + 1) * m - 1] = xtmp[i];
 	}
+	free(xtmp);
+	free(maintmp);
+	free(uptmp);
+	free(downtmp);
+	free(ftmp);
 
 	omp_set_num_threads(curNOfThreads);
 	return X;
@@ -390,11 +398,18 @@ double *MatrixDiag::sweepOMP1(double *F)
 	//int curNOfThreads = omp_get_num_threads();
 	//omp_set_num_threads(2);
 	//double wtime0 = 0.0, wtime1 = 0.0;
-	vector<double> X(size, 0.0);
-	vector<double> alfa(size, 0.0);
-	vector<double> beta(size, 0.0);
-	vector<double> ksi(size, 0.0);
-	vector<double> eta(size, 0.0);
+	double *X = (double *)malloc(sizeof(double) * size);
+	double *alfa = (double *)malloc(sizeof(double) * size);
+	double *beta = (double *)malloc(sizeof(double) * size);
+	double *ksi = (double *)malloc(sizeof(double) * size);
+	double *eta = (double *)malloc(sizeof(double) * size);
+	for (int i = 0; i < size; i++) {
+		X[i] = 0.0;
+		alfa[i] = 0.0;
+		beta[i] = 0.0;
+		ksi[i] = 0.0;
+		eta[i] = 0.0;
+	}
 	int p = size / 2;
 
 #pragma omp parallel shared(X, alfa, beta, ksi, eta, p) num_threads(2)
@@ -444,9 +459,8 @@ double *MatrixDiag::sweepOMP1(double *F)
 		{
 			//  thread 1
 			//wtime1 = omp_get_wtime();
-			int itmp = 0;
 			for (int i = p - 1; i >= 0; i--) {
-				X[i] = alfa[itmp] * X[itmp] + beta[itmp];
+				X[i] = alfa[i + 1] * X[i + 1] + beta[i + 1];
 			}
 			//wtime1 = omp_get_wtime() - wtime1;
 		}
@@ -465,7 +479,11 @@ double *MatrixDiag::sweepOMP1(double *F)
 	//ofstream fout("wtime2.txt", std::fstream::app);
 	//fout << wtime0 + wtime1 << endl;
 	//fout.close();
+
+	free(alfa);
+	free(beta);
+	free(ksi);
+	free(eta);
+
 	return X;
 }
-
-*/

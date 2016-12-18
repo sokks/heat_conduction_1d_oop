@@ -26,7 +26,7 @@ public:
 
 	bool isEmpty();
 	double *sweep(double *F);
-	double *sweepOMP(double *F, int nOfThreads = 4) { return 0; }
-	double *sweepOMP1(double *F) { return 0; }
+	double *sweepOMP(double *F, int nOfThreads = 4);
+	double *sweepOMP1(double *F);
 };
 

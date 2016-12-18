@@ -49,6 +49,7 @@ public:
 	double *getPreviousTemperature();
 	double *getCurrentTemperature();
 	double getTime();
+	int getXSteps() { return X_STEPS; }
 
 	double solve(char *filename, double tEnd = 10.0);
 	double doTimeStep();
