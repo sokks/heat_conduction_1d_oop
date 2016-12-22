@@ -26,12 +26,13 @@ HeatEquation::HeatEquation(double _L, double _lambda, double _ro, double _c, dou
 	currentTemperature = startTemperature;
 }
 
-HeatEquation::HeatEquation(double _L, double _a)
+HeatEquation::HeatEquation(double _L, double _a, int mod)
 {
 	L = _L;
 	x_step = L / (X_STEPS - 1);
 	lambda = ro = c = 0.0;
 	a_sqr = _a;
+	merge_mod = mod;
 	currentTime = 0.0;
 	startTemperature = vector<double>(X_STEPS);
 	for (int i = 0; i < X_STEPS; i++) {
@@ -148,6 +149,44 @@ double HeatEquation::solve_implicit(std::string filename, double tEnd)
 	return runtime;
 }
 
+double HeatEquation::solve_explicit(std::string filename, double tEnd)
+{
+	if (tEnd - time_step * TIME_STEPS > EPS) {
+		SetTimeStep(tEnd / TIME_STEPS);
+	}
+	currentTime = 0;
+	currentTemperature = startTemperature;
+	ofstream fout;
+	fout.open(filename);
+	fout << TIME_STEPS << std::endl;
+	for (int i = 0; i < TIME_STEPS; i++) {
+		for (vector<double>::iterator it = currentTemperature.begin(); it != currentTemperature.end(); ++it) {
+			fout << *it << " ";
+		}
+		fout << std::endl;
+		//doTimeStep();
+		currentTime += time_step;
+		previousTemperature = currentTemperature;
+		if (merge_mod == 1) {
+			currentTemperature[0] = mu1(currentTime);
+			currentTemperature[X_STEPS - 1] = mu2(currentTime);
+		}
+		else if (merge_mod == 2) {
+			currentTemperature[0] = previousTemperature[0] + time_step * mu1(currentTime - time_step);
+			currentTemperature[X_STEPS - 1] = previousTemperature[X_STEPS - 1] + time_step * mu2(currentTime - time_step);
+		}
+		double koef = time_step / (x_step * x_step);
+		for (int p = 1; p < X_STEPS - 1; p++) {
+			currentTemperature[p] = previousTemperature[p] +
+									koef * (previousTemperature[p - 1] -
+											2 * previousTemperature[p] +
+											previousTemperature[p + 1]);
+		}
+	}
+	fout.close();
+	return 0.0;
+}
+
 double HeatEquation::doTimeStep()
 {
 	currentTime += time_step;
@@ -165,8 +204,15 @@ double HeatEquation::doTimeStep()
 	for (int i = 0; i < X_STEPS; i++) {
 		F[i] = -previousTemperature[i];
 	}
-	tL = mu1(currentTime);
-	tR = mu2(currentTime);
+
+	if (merge_mod == 1) {
+		tL = mu1(currentTime);
+		tR = mu2(currentTime);
+	}
+	else if (merge_mod == 2) {
+		tL = previousTemperature[0] + time_step * mu1(currentTime - time_step);
+		tR = previousTemperature[X_STEPS - 1] + time_step * mu2(currentTime - time_step);
+	}
 	currentTemperature = S.sweep(F, tL, tR);
 
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr2);
@@ -178,6 +224,7 @@ double HeatEquation::doTimeStep()
 double HeatEquation::fStart(double x)
 {
 	return 2 * sin(M_PI * x / L);
+	//return gaussian(x, 0.001, 0);
 }
 
 double HeatEquation::mu1(double t)
@@ -202,8 +249,8 @@ TestHeatEquation::TestHeatEquation(double _L, double _lambda, double _ro, double
 	currentTemperatureAnalytic = startTemperature;
 }
 
-TestHeatEquation::TestHeatEquation(double _L, double _a): 
-	HeatEquation(_L, _a)
+TestHeatEquation::TestHeatEquation(double _L, double _a, int mod): 
+	HeatEquation(_L, _a, mod)
 {
 	previousTemperatureAnalytic = vector<double>(X_STEPS, 0.0);
 	currentTemperatureAnalytic = startTemperature;
@@ -317,4 +364,9 @@ double Functor2::operator()(double x)
 double Functor2::operator()(double x, double t)
 {
 	return exp(-M_PI * M_PI * t) * sin(M_PI * x);
+}
+
+double gaussian(double x, double sigma, double mu)
+{
+	return (1 / (sigma * sqrt(2 * M_PI))) * exp(-((x - mu) * (x - mu)) / (2 * sigma * sigma));
 }

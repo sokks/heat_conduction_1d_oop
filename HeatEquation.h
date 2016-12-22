@@ -29,6 +29,8 @@ protected:
 	vector<double> startTemperature, previousTemperature, currentTemperature;
 	double currentTime;
 
+	int merge_mod = 1;
+
 	double fStart(double x);
 	double mu1(double t);
 	double mu2(double t);
@@ -36,7 +38,7 @@ protected:
 public:
 	HeatEquation();
 	HeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight);
-	HeatEquation(double _L, double _a);
+	HeatEquation(double _L, double _a, int mod = 1);
 	HeatEquation(const HeatEquation & anotherEquation);
 	HeatEquation & operator= (const HeatEquation & anotherEquation);
 	~HeatEquation();
@@ -50,7 +52,7 @@ public:
 	double getTime();
 
 	double solve_implicit(std::string filename, double tEnd = 10.0);
-	//double solve_explicit(std::string filename, double tEnd = 10.0);
+	double solve_explicit(std::string filename, double tEnd = 10.0);
 	double doTimeStep();
 };
 
@@ -60,7 +62,7 @@ class TestHeatEquation : public HeatEquation {
 public:
 	TestHeatEquation() {}
 	TestHeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight);
-	TestHeatEquation(double _L, double _a);
+	TestHeatEquation(double _L, double _a, int mod = 1);
 	TestHeatEquation(const TestHeatEquation & anotherEquation);
 	TestHeatEquation & operator= (const TestHeatEquation & anotherEquation);
 	void presolve(std::string filename, double tEnd = 10.0, bool check = false, double eps = 0.001);
@@ -68,3 +70,5 @@ public:
 	bool compare(double eps = 0.001);
 };
 
+
+double gaussian(double x, double sigma, double mu);
