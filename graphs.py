@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-test_mod = 0
+test_mod = 1
 
 
 def plot(data, data1):
@@ -33,7 +33,7 @@ def plot0(data):
     return
 
 if (test_mod):
-    file = open("D:\\Documents\\sem5\\setki\\heat_conduction_1d_oop\\heat_conduction_1d_oop\\outputtest.txt")
+    file = open("D:\\Documents\\sem5\\setki\\heat_conduction_1d_oop\\heat_conduction_1d_oop\\output_t.txt")
     time_steps = int(file.readline())
     #N = int(file.readline())
 

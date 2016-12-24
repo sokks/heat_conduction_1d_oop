@@ -64,22 +64,28 @@ vector<double> MatrixDiag::sweep(vector<double> F)
 	return X;
 }
 
-vector<double> MatrixDiag::sweep(vector<double> F, double left, double right)
+vector<double> MatrixDiag::sweep(vector<double> F, int mod, double right, double alfa1, double beta1, 
+															double koef, double k1, double k2)
 {
 	vector<double> X(size, 0.0);
 	vector<double> alfa(size, 0.0);
 	vector<double> beta(size, 0.0);
 
-	X[0] = left;
-	alfa[2] = upDiag[1] / mainDiag[1];
-	beta[2] = ( downDiag[1] * left - F[1] ) / mainDiag[1];
-	for (int i = 3; i < size; i++) {
+	alfa[1] = alfa1;
+	beta[1] = beta1;
+
+	for (int i = 2; i < size; i++) {
 		alfa[i] = -upDiag[i - 1] / (downDiag[i - 1] * alfa[i - 1] + mainDiag[i - 1]);
 		beta[i] = (F[i - 1] - downDiag[i - 1] * beta[i - 1]) / (downDiag[i - 1] * alfa[i - 1] + mainDiag[i - 1]);
 	}
-
-	X[size - 1] = right;
-	for (int i = size - 2; i >= 1; i--) {
+	
+	if (mod == 1) {
+		X[size - 1] = right;
+	}
+	else if (mod == 2) {
+		X[size - 1] = (k1 + koef * beta[size - 1]) / (k2 - koef * alfa[size - 1]);
+	}
+	for (int i = size - 2; i >= 0; i--) {
 		X[i] = alfa[i + 1] * X[i + 1] + beta[i + 1];
 	}
 

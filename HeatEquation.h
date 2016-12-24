@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <iostream>
 #include "MatrixDiag.h"
 #define M_PI 3.14159265358979323846
 #define EPS 0.00001

@@ -20,6 +20,7 @@ public:
 
 	bool isEmpty();
 	vector<double> sweep(vector<double> F);
-	vector<double> sweep(vector<double> F, double left, double right);
+	vector<double> sweep(vector<double> F, int mod, double right, double alfa1, double beta1, 
+													double koef = 0.0, double k1 = 0.0, double k2 = 0.0);
 };
 
