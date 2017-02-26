@@ -26,14 +26,15 @@ HeatEquation::HeatEquation(double _L, double _lambda, double _ro, double _c, dou
 	currentTemperature = startTemperature;
 }
 
-HeatEquation::HeatEquation(double _L, double _a, int mod)
+HeatEquation::HeatEquation(double _L, double _a, int modl, int modr)
 {
 	L = _L;
 	x_step = L / (X_STEPS - 1);
 	//cout << x_step << endl;
 	lambda = ro = c = 0.0;
 	a_sqr = _a;
-	merge_mod = mod;
+	merge_mod_l = modl;
+	merge_mod_r = modr;
 	currentTime = 0.0;
 	startTemperature = vector<double>(X_STEPS);
 	for (int i = 0; i < X_STEPS; i++) {
@@ -179,11 +180,11 @@ double HeatEquation::solve_explicit(std::string filename, double tEnd)
 		//doTimeStep();
 		currentTime += time_step;
 		previousTemperature = currentTemperature;
-		if (merge_mod == 1) {
+		if (merge_mod_l == 1) {
 			currentTemperature[0] = mu1(currentTime);
 			currentTemperature[X_STEPS - 1] = mu2(currentTime);
 		}
-		else if (merge_mod == 2) {
+		else if (merge_mod_l == 2) {
 			currentTemperature[0] = previousTemperature[0] + time_step * mu1(currentTime - time_step);
 			currentTemperature[X_STEPS - 1] = previousTemperature[X_STEPS - 1] + time_step * mu2(currentTime - time_step);
 		}
@@ -217,12 +218,12 @@ double HeatEquation::doTimeStep()
 		F[i] = -previousTemperature[i];
 	}
 
-	if (merge_mod == 1) {
+	if (merge_mod_l == 1 && merge_mod_r == 1) {
 		tL = mu1(currentTime);
 		tR = mu2(currentTime);
 		currentTemperature = S.sweep(F, 1, tR, 0.0, tL);
 	}
-	else if (merge_mod == 2) {
+	else if (merge_mod_l == 2 && merge_mod_r == 2) {
 		//tL = previousTemperature[0] + time_step * mu1(currentTime - time_step);
 		//tR = previousTemperature[X_STEPS - 1] + time_step * mu2(currentTime - time_step);
 		double alfa1 = (2 * a_sqr * time_step) / (2 * a_sqr * time_step + x_step * x_step);
@@ -233,7 +234,21 @@ double HeatEquation::doTimeStep()
 		double k2 = 2 * a_sqr * time_step + x_step * x_step;
 		currentTemperature = S.sweep(F, 2, 0.0, alfa1, beta1, koef, k1, k2);
 	}
-	
+	else if (merge_mod_l == 1 && merge_mod_r == 2) {
+		tL = mu1(currentTime);
+
+		double koef = 2 * a_sqr * time_step;
+		double k1 = 2 * a_sqr * time_step * x_step * mu2(currentTime) + x_step * x_step * previousTemperature[X_STEPS - 1];
+		double k2 = 2 * a_sqr * time_step + x_step * x_step;
+		currentTemperature = S.sweep(F, 2, 0.0, 0.0, tL, koef, k1, k2);
+	}
+	else if (merge_mod_l == 2 && merge_mod_r == 1) {
+		tR = mu2(currentTime);
+		double alfa1 = (2 * a_sqr * time_step) / (2 * a_sqr * time_step + x_step * x_step);
+		double beta1 = (x_step * x_step) / (2 * a_sqr * time_step + x_step * x_step) * previousTemperature[0]
+			- (2 * a_sqr * time_step * x_step) / (2 * a_sqr * time_step + x_step * x_step) * mu1(currentTime);
+		currentTemperature = S.sweep(F, 1, tR, alfa1, beta1);
+	}
 
 	QueryPerformanceCounter((LARGE_INTEGER *)&ctr2);
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
@@ -244,19 +259,20 @@ double HeatEquation::doTimeStep()
 double HeatEquation::fStart(double x)
 {
 	//return 2 * sin(M_PI * x / L);
-	return gaussian(x, 0.1, L/2);
+	//return gaussian(x, 0.1, L/2);
+	return 0.0;
 }
 
 double HeatEquation::mu1(double t)
 {
-	//return 0.0;
-	return t;
+	return sin(t);
+	//return t;
 }
 
 double HeatEquation::mu2(double t)
 {
-	//return 0.0;
-	return -t;
+	return 0.0;
+	//return -t;
 }
 
 double TestHeatEquation::testRes(double x, double t)

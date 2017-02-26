@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-test_mod = 1
+test_mod = 0
 
 
 def plot(data, data1):
@@ -23,13 +23,15 @@ def plot0(data):
     plt.figure()
     plt.ion()
     for i in range(data.shape[0]):
-        if i % 10 == 0:
-            plt.plot(data[i], color='b', marker="o")
+        #if i % 10 == 0:
+            plt.clf()
+            plt.plot(data[i], color='b')
+            plt.ylim(-1, 1)
             #plt.legend(("count", "real"))
             plt.title('Temperature_changes')
             plt.grid(True)
             plt.pause(0.1)
-    plt.show(block=True)
+            plt.show(block=False)
     return
 
 if (test_mod):

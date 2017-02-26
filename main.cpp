@@ -22,24 +22,26 @@ int main() {
 	double L = 1.0;
 	double a = 1.0;
 	int N = 100;
-	int mod = 1;
+	int mod_l = 1, mod_r = 1;
 
 	cout << "L = ";
 	cin >> L;
 	cout << "a = ";
 	cin >> a;
-	cout << "merge_mod: ";
-	cin >> mod;
+	cout << "merge_mod_left: ";
+	cin >> mod_l;
+	cout << "merge_mod_right: ";
+	cin >> mod_r;
 
-	TestHeatEquation Eq1(L, a, mod);
+	HeatEquation Eq1(L, a, mod_l, mod_r);
 
 	cout << "X_STEPS = ";
 	cin >> N;
 	Eq1.SetXSteps(N);
 	//vector<double> cur(N);
 
-	Eq1.solve_implicit(out1, 0.5);
-	Eq1.solve_explicit(out2, 0.5);
+	Eq1.solve_implicit(out1, 3.0);
+	//Eq1.solve_explicit(out2, 3.0);
 
 	//Eq1.presolve(out3, 0.5);
 

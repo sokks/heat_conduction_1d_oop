@@ -30,7 +30,8 @@ protected:
 	vector<double> startTemperature, previousTemperature, currentTemperature;
 	double currentTime;
 
-	int merge_mod = 1;
+	int merge_mod_l = 1;
+	int merge_mod_r = 1;
 
 	double fStart(double x);
 	double mu1(double t);
@@ -39,7 +40,7 @@ protected:
 public:
 	HeatEquation();
 	HeatEquation(double _L, double _lambda, double _ro, double _c, double _tLeft, double _tRight);
-	HeatEquation(double _L, double _a, int mod = 1);
+	HeatEquation(double _L, double _a, int modl = 1, int modr = 1);
 	HeatEquation(const HeatEquation & anotherEquation);
 	HeatEquation & operator= (const HeatEquation & anotherEquation);
 	~HeatEquation();
